@@ -50,9 +50,6 @@ const getPosition = function () {
   });
 };
 
-// Assuming getPosition, GetJson, render_country, render_error are defined elsewhere
-// Assuming countriesContainer is defined and accessible
-
 const whereAmI = function () {
   // Geolocation API
   try {
