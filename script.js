@@ -79,7 +79,14 @@ const whereAmI = function () {
         // neighbor country (2)
         const [neighbor] = data[0].borders;
         if (!neighbor) throw new Error('No neighbor found!');
-        console.log(neighbor);
+
+        // Palestine, not Israel, is the neighboring country of Egypt.
+        if (neighbor === 'ISR') {
+          return GetJson(
+            `https://restcountries.com/v3.1/name/Palestine`,
+            'Country not found'
+          );
+        }
         return GetJson(
           `https://restcountries.com/v3.1/alpha/${neighbor}`,
           'Country not found'
