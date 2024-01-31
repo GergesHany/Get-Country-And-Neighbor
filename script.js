@@ -36,9 +36,17 @@ const render_country = function (data, className = '') {
   }
 };
 
-const GetJson = async function (url, errorMsg = 'Something went wrong') {
+const getJson = async (url, errorMsg = 'Failed to fetch JSON') => {
   const response = await fetch(url);
-  if (!response.ok) throw new Error(`${errorMsg} (${response.status})`);
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error(`Resource not found at ${url}`);
+    } else {
+      throw new Error(`${errorMsg} (${response.status})`);
+    }
+  }
+
   return await response.json();
 };
 
@@ -46,7 +54,9 @@ const getPosition = function () {
   return new Promise(function (resolve, reject) {
     // navigator -> it is an object that lives in the browser
     // (geolocation API) -> it is a browser API that allows us to get the current position of the user
-    navigator.geolocation.getCurrentPosition(resolve, reject);
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: true,
+    });
   });
 };
 
@@ -57,14 +67,14 @@ const whereAmI = function () {
       .then(pos => {
         const { latitude: lat, longitude: lng } = pos.coords;
 
-        return GetJson(
+        return getJson(
           `https://geocode.xyz/${lat},${lng}?geoit=json`,
           'Problem getting location'
         );
       })
       .then(data => {
         console.log(`You are in ${data.city}, ${data.country}`);
-        return GetJson(
+        return getJson(
           `https://restcountries.com/v3.1/name/${data.country}`,
           'Country not found'
         );
@@ -79,18 +89,18 @@ const whereAmI = function () {
 
         // Palestine, not Israel, is the neighboring country of Egypt.
         if (neighbor === 'ISR') {
-          return GetJson(
+          return getJson(
             `https://restcountries.com/v3.1/name/Palestine`,
             'Country not found'
           );
         }
-        return GetJson(
+        return getJson(
           `https://restcountries.com/v3.1/alpha/${neighbor}`,
           'Country not found'
         );
       })
       .then(data => {
-        data.forEach(country => render_country(country, 'neighbour'));
+        render_country(data[0], 'neighbour');
       })
       .catch(err => {
         console.error(`${err.message} 💥`);
